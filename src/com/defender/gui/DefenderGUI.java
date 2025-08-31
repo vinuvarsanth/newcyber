@@ -1,6 +1,16 @@
 package com.defender.gui;
 
-import com.defender.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.WatchEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
+
+import com.defender.DetectionEngine;
+import com.defender.EmergencyResponse;
+import com.defender.FileMonitor;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -12,12 +22,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
-import java.nio.file.WatchEvent;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
 
 public class DefenderGUI extends Application implements
         FileMonitor.FileMonitorCallback,
@@ -33,7 +37,6 @@ public class DefenderGUI extends Application implements
     private Label statusLabel, pathLabel, statsLabel;
     private TextArea logArea;
     private ProgressBar detectionProgress;
-
     private boolean isMonitoring = false;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
@@ -73,7 +76,7 @@ public class DefenderGUI extends Application implements
         // Status labels
         statusLabel = new Label("Ready");
         pathLabel = new Label("No folder selected");
-        statsLabel = new Label("Files: 0 | Alerts: 0 | Current: 0/10");
+        statsLabel = new Label("Files: 0 | Deletes: 0 | Alerts: 0 | Current: 0/10");
 
         VBox statusBox = new VBox(5, statusLabel, pathLabel, statsLabel);
 
@@ -86,7 +89,6 @@ public class DefenderGUI extends Application implements
         logArea.setPrefHeight(400);
 
         mainUI.getChildren().addAll(topControls, statusBox, detectionProgress, logArea);
-
         root.getChildren().addAll(canvas, mainUI);
 
         Scene scene = new Scene(root, 800, 600);
@@ -103,10 +105,9 @@ public class DefenderGUI extends Application implements
     private void selectFolder(Stage stage) {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Select Folder to Monitor");
-        Path selected = null;
         java.io.File file = chooser.showDialog(stage);
         if (file != null) {
-            selected = file.toPath();
+            Path selected = file.toPath();
             pathField.setText(selected.toString());
             pathLabel.setText(selected.toString());
         }
@@ -118,6 +119,7 @@ public class DefenderGUI extends Application implements
             alert("Please select a folder first.");
             return;
         }
+
         try {
             Path monitorPath = Paths.get(path);
             fileMonitor.startMonitoring(monitorPath);
@@ -137,9 +139,7 @@ public class DefenderGUI extends Application implements
     }
 
     private void alert(String msg) {
-        Platform.runLater(() -> {
-            new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
-        });
+        Platform.runLater(() -> new Alert(Alert.AlertType.INFORMATION, msg).showAndWait());
     }
 
     private void logMessage(String msg) {
@@ -149,7 +149,8 @@ public class DefenderGUI extends Application implements
         });
     }
 
-    // Callbacks...
+    // ====== FILE MONITOR CALLBACKS ======
+
     @Override
     public void onMonitoringStarted(Path path) {
         Platform.runLater(() -> {
@@ -170,7 +171,9 @@ public class DefenderGUI extends Application implements
 
     @Override
     public void onFileEvent(WatchEvent.Kind<?> kind, Path path) {
-        logMessage("File " + kind.name().toLowerCase() + ": " + path);
+        Platform.runLater(() -> {
+            logMessage("File " + kind.name().toLowerCase() + ": " + path);
+        });
     }
 
     @Override
@@ -178,22 +181,26 @@ public class DefenderGUI extends Application implements
         logMessage("ERROR: " + e.getMessage());
     }
 
+    // ====== DETECTION ENGINE CALLBACKS ======
+
     @Override
-    public void onRansomwareDetected(int fileCount, long timeWindowSeconds) {
-        logMessage("🚨 Ransomware detected: " + fileCount + " files in " + timeWindowSeconds + "s");
+    public void onRansomwareDetected(String type, int fileCount, long timeWindowSeconds) {
+        logMessage("🚨 Ransomware detected (" + type + "): " + fileCount + " files in " + timeWindowSeconds + "s");
         alert("Ransomware detected! Executing emergency response...");
         emergencyResponse.executeEmergencyResponse();
     }
 
     @Override
-    public void onStatisticsUpdate(long totalMods, long alerts) {
+    public void onStatisticsUpdate(long totalMods, long totalDeletes, long alerts) {
         Platform.runLater(() -> {
-            statsLabel.setText("Files: " + totalMods + " | Alerts: " + alerts +
-                    " | Current: " + detectionEngine.getCurrentModificationCount() + "/10");
-            detectionProgress.setProgress(Math.min(1.0,
-                    detectionEngine.getCurrentModificationCount() / 10.0));
+            statsLabel.setText("Files: " + totalMods + " | Deletes: " + totalDeletes + " | Alerts: " + alerts +
+                " | Current: " + detectionEngine.getCurrentModificationCount() + "/10");
+            detectionProgress.setProgress(
+                Math.min(1.0, detectionEngine.getCurrentModificationCount() / 10.0));
         });
     }
+
+    // ===== EMERGENCY RESPONSE CALLBACKS =====
 
     @Override
     public void onEmergencyStarted() {
@@ -221,6 +228,7 @@ public class DefenderGUI extends Application implements
     }
 
     // ===== MATRIX RAIN EFFECT =====
+
     private void startMatrixRain(GraphicsContext gc, int width, int height) {
         final String chars = "01ZX$#@%&";
         final int fontSize = 18;
@@ -244,6 +252,7 @@ public class DefenderGUI extends Application implements
                     if (drops[i] * fontSize > height && Math.random() > 0.975) {
                         drops[i] = 0;
                     }
+
                     drops[i]++;
                 }
             }
