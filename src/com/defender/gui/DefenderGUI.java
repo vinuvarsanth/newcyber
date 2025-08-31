@@ -26,10 +26,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
 
-public class DefenderGUI extends Application implements 
-    FileMonitor.FileMonitorCallback,
-    DetectionEngine.DetectionCallback,
-    EmergencyResponse.EmergencyCallback {
+public class DefenderGUI extends Application implements
+        FileMonitor.FileMonitorCallback,
+        DetectionEngine.DetectionCallback,
+        EmergencyResponse.EmergencyCallback {
 
     private FileMonitor fileMonitor;
     private DetectionEngine detectionEngine;
@@ -60,7 +60,7 @@ public class DefenderGUI extends Application implements
 
         // Root layout with background canvas
         StackPane root = new StackPane();
-        
+
         // Matrix rain canvas
         Canvas canvas = new Canvas(1200, 800);
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -82,7 +82,7 @@ public class DefenderGUI extends Application implements
         rightPanel.setPrefWidth(650);
 
         mainLayout.getChildren().addAll(leftPanel, rightPanel);
-        
+
         // Center the main layout in the root
         StackPane.setAlignment(mainLayout, javafx.geometry.Pos.CENTER);
         root.getChildren().addAll(canvas, mainLayout);
@@ -108,7 +108,6 @@ public class DefenderGUI extends Application implements
         pathField.setPromptText("Folder to monitor...");
         Button browseBtn = new Button("📁 Browse");
         browseBtn.getStyleClass().add("control-button");
-        
         browseBtn.setOnAction(e -> selectFolder(primaryStage));
         topControls.getChildren().addAll(pathField, browseBtn);
 
@@ -117,26 +116,25 @@ public class DefenderGUI extends Application implements
         Button startBtn = new Button("▶️ Start");
         Button stopBtn = new Button("⏹️ Stop");
         Button testBtn = new Button("🚨 Test Emergency");
-        
+
         // Apply custom styling to buttons
         startBtn.getStyleClass().add("control-button");
         stopBtn.getStyleClass().add("control-button");
         testBtn.getStyleClass().add("control-button");
-        
+
         startBtn.setOnAction(e -> startMonitoring());
         stopBtn.setOnAction(e -> stopMonitoring());
         testBtn.setOnAction(e -> testEmergency());
-        
+
         buttonControls.getChildren().addAll(startBtn, stopBtn, testBtn);
 
         // Status labels with title
         Label statusTitle = new Label("📊 System Status");
         statusTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        
         statusLabel = new Label("Ready");
         pathLabel = new Label("No folder selected");
         statsLabel = new Label("Files: 0 | Deletes: 0 | Alerts: 0 | Current: 0/10");
-        
+
         VBox statusBox = new VBox(8, statusTitle, statusLabel, pathLabel, statsLabel);
 
         // Progress bar
@@ -146,18 +144,17 @@ public class DefenderGUI extends Application implements
         // Log area with title
         Label logTitle = new Label("📝 Activity Log");
         logTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        
         logArea = new TextArea();
         logArea.setEditable(false);
         logArea.setPrefHeight(350);
 
         leftPanel.getChildren().addAll(
-            topControls, 
-            buttonControls, 
-            statusBox, 
-            detectionProgress,
-            logTitle, 
-            logArea
+                topControls,
+                buttonControls,
+                statusBox,
+                detectionProgress,
+                logTitle,
+                logArea
         );
 
         return leftPanel;
@@ -173,7 +170,6 @@ public class DefenderGUI extends Application implements
         yAxis.setLabel("File Count");
         xAxis.setAnimated(true);
         yAxis.setAnimated(true);
-
         activityChart = new LineChart<>(xAxis, yAxis);
         activityChart.setTitle("📊 Real-Time File Activity");
         activityChart.setPrefHeight(250);
@@ -185,53 +181,79 @@ public class DefenderGUI extends Application implements
         modificationSeries.setName("Modifications");
         deletionSeries = new XYChart.Series<>();
         deletionSeries.setName("Deletions");
-
         activityChart.getData().addAll(modificationSeries, deletionSeries);
 
-        // Statistics Pie Chart
+        // Statistics Pie Chart with blue border panel
+        VBox pieChartContainer = new VBox(10);
+        pieChartContainer.getStyleClass().add("pie-chart-panel"); // Blue border style
+        pieChartContainer.setPadding(new Insets(15));
+        pieChartContainer.setAlignment(javafx.geometry.Pos.CENTER);
+        
         statisticsChart = new PieChart();
         statisticsChart.setTitle("📈 Detection Statistics");
         statisticsChart.setPrefHeight(250);
+        statisticsChart.getStyleClass().add("attractive-pie-chart");
         updateStatisticsPieChart(0, 0, 0);
+        
+        pieChartContainer.getChildren().add(statisticsChart);
 
         // Threat Level Panel (styled as a prominent panel)
         VBox threatPanel = new VBox(10);
         threatPanel.getStyleClass().add("threat-panel");
         threatPanel.setAlignment(javafx.geometry.Pos.CENTER);
         threatPanel.setPadding(new Insets(15));
-        
         Label threatTitle = new Label("🚨 THREAT LEVEL MONITOR");
         threatTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #ff0000;");
-        
+
         // Threat gauge with larger size
         threatGauge = new ProgressIndicator(0);
         threatGauge.setPrefSize(120, 120);
         threatGauge.getStyleClass().add("threat-gauge");
-        
+
         // Threat level text with larger font
         Label threatLevelText = new Label("LOW");
         threatLevelText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #00ff41;");
         threatLevelText.setId("threat-level-text");
-        
+
         // Additional threat info
         Label threatInfo = new Label("System Status: SECURE");
         threatInfo.setStyle("-fx-font-size: 12px; -fx-text-fill: #00ff41;");
         threatInfo.setId("threat-info-text");
-        
+
         threatPanel.getChildren().addAll(threatTitle, threatGauge, threatLevelText, threatInfo);
 
-        chartsPanel.getChildren().addAll(activityChart, statisticsChart, threatPanel);
+        chartsPanel.getChildren().addAll(activityChart, pieChartContainer, threatPanel);
+
         return chartsPanel;
     }
 
     private void updateStatisticsPieChart(long totalMods, long totalDeletes, long alerts) {
         Platform.runLater(() -> {
-            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
-                new PieChart.Data("Modifications", totalMods),
-                new PieChart.Data("Deletions", totalDeletes),
-                new PieChart.Data("Alerts Triggered", alerts)
-            );
+            ObservableList<PieChart.Data> pieChartData =
+                    FXCollections.observableArrayList(
+                            new PieChart.Data("Modifications", totalMods),
+                            new PieChart.Data("Deletions", totalDeletes),
+                            new PieChart.Data("Alerts Triggered", alerts)
+                    );
             statisticsChart.setData(pieChartData);
+
+            // Apply attractive colors to pie chart slices
+            String[] attractiveColors = {
+                "#1E88E5",  // Beautiful Blue
+                "#26C6DA",  // Cyan
+                "#AB47BC"   // Purple
+            };
+            
+            // Apply colors after the chart is rendered
+            Platform.runLater(() -> {
+                int colorIndex = 0;
+                for (PieChart.Data data : pieChartData) {
+                    if (data.getNode() != null) {
+                        data.getNode().setStyle("-fx-pie-color: " + attractiveColors[colorIndex % attractiveColors.length] + ";");
+                        colorIndex++;
+                    }
+                }
+            });
         });
     }
 
@@ -240,9 +262,9 @@ public class DefenderGUI extends Application implements
             timeCounter++;
             // Add new data points
             modificationSeries.getData().add(new XYChart.Data<>(timeCounter,
-                detectionEngine.getCurrentModificationCount()));
+                    detectionEngine.getCurrentModificationCount()));
             deletionSeries.getData().add(new XYChart.Data<>(timeCounter,
-                detectionEngine.getCurrentDeletionCount()));
+                    detectionEngine.getCurrentDeletionCount()));
 
             // Keep only last 20 points for performance
             if (modificationSeries.getData().size() > 20) {
@@ -261,9 +283,8 @@ public class DefenderGUI extends Application implements
             String threatText = "LOW";
             String threatColor = "#00ff41"; // Green
             String threatInfo = "System Status: SECURE";
-            
+
             int currentMods = detectionEngine.getCurrentModificationCount();
-            
             if (alerts > 0) {
                 threatLevel = 1.0;
                 threatText = "CRITICAL";
@@ -285,18 +306,17 @@ public class DefenderGUI extends Application implements
                 threatColor = "#ccff00"; // Yellow-green
                 threatInfo = "📊 Normal Activity";
             }
-            
+
             threatGauge.setProgress(threatLevel);
-            
+
             // Update threat level text
             Label threatLevelText = (Label) threatGauge.getParent().lookup("#threat-level-text");
             Label threatInfoText = (Label) threatGauge.getParent().lookup("#threat-info-text");
-            
+
             if (threatLevelText != null) {
                 threatLevelText.setText(threatText);
                 threatLevelText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + threatColor + ";");
             }
-            
             if (threatInfoText != null) {
                 threatInfoText.setText(threatInfo);
                 threatInfoText.setStyle("-fx-font-size: 12px; -fx-text-fill: " + threatColor + ";");
@@ -395,14 +415,13 @@ public class DefenderGUI extends Application implements
     public void onStatisticsUpdate(long totalMods, long totalDeletes, long alerts) {
         Platform.runLater(() -> {
             statsLabel.setText("📊 Files: " + totalMods + " | Deletes: " + totalDeletes + " | Alerts: " + alerts +
-                " | Current: " + detectionEngine.getCurrentModificationCount() + "/10");
+                    " | Current: " + detectionEngine.getCurrentModificationCount() + "/10");
             detectionProgress.setProgress(
-                Math.min(1.0, detectionEngine.getCurrentModificationCount() / 10.0));
-            
+                    Math.min(1.0, detectionEngine.getCurrentModificationCount() / 10.0));
+
             // Update charts
             updateStatisticsPieChart(totalMods, totalDeletes, alerts);
             updateActivityChart();
-            
             // Update threat level gauge
             updateThreatLevel(totalMods, totalDeletes, alerts);
         });

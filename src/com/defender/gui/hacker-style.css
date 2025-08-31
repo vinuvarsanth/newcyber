@@ -140,3 +140,47 @@
     -fx-background-color: rgba(255, 255, 255, 0.1);
     -fx-background-insets: 0;
 }
+
+/* Pie Chart Panel with Blue Border */
+.pie-chart-panel {
+    -fx-background-color: rgba(0, 0, 0, 0.85);
+    -fx-border-color: #2196F3; /* Beautiful Blue Border */
+    -fx-border-width: 3px;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, #2196F3, 10, 0.4, 0, 0);
+}
+
+/* Enhanced Pie Chart Styling */
+.attractive-pie-chart {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.attractive-pie-chart .chart-title {
+    -fx-text-fill: #2196F3;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.attractive-pie-chart .chart-legend {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+    -fx-border-color: #2196F3;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+}
+
+.attractive-pie-chart .chart-legend-item-text {
+    -fx-fill: #FFFFFF;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-weight: bold;
+}
+
+/* Pie Chart Slice Hover Effects */
+.chart-pie:hover {
+    -fx-effect: dropshadow(gaussian, derive(-fx-pie-color, 50%), 8, 0.6, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
