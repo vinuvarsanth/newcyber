@@ -26,10 +26,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
 
-public class DefenderGUI extends Application implements
-        FileMonitor.FileMonitorCallback,
-        DetectionEngine.DetectionCallback,
-        EmergencyResponse.EmergencyCallback {
+public class DefenderGUI extends Application implements 
+    FileMonitor.FileMonitorCallback,
+    DetectionEngine.DetectionCallback,
+    EmergencyResponse.EmergencyCallback {
 
     private FileMonitor fileMonitor;
     private DetectionEngine detectionEngine;
@@ -40,13 +40,14 @@ public class DefenderGUI extends Application implements
     private Label statusLabel, pathLabel, statsLabel;
     private TextArea logArea;
     private ProgressBar detectionProgress;
-    
+    private ProgressIndicator threatGauge;
+
     // Charts
-    private LineChart<Number, Number> activityChart;
+    private LineChart activityChart;
     private PieChart statisticsChart;
-    private XYChart.Series<Number, Number> modificationSeries;
-    private XYChart.Series<Number, Number> deletionSeries;
-    
+    private XYChart.Series modificationSeries;
+    private XYChart.Series deletionSeries;
+
     private boolean isMonitoring = false;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     private int timeCounter = 0;
@@ -59,25 +60,31 @@ public class DefenderGUI extends Application implements
 
         // Root layout with background canvas
         StackPane root = new StackPane();
-
+        
         // Matrix rain canvas
         Canvas canvas = new Canvas(1200, 800);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         startMatrixRain(gc, 1200, 800);
 
-        // Main UI with charts
-        HBox mainLayout = new HBox(10);
-        mainLayout.setPadding(new Insets(10));
+        // Main UI container with center alignment
+        HBox mainLayout = new HBox(20);
+        mainLayout.setPadding(new Insets(20));
+        mainLayout.getStyleClass().add("main-container");
+        mainLayout.setAlignment(javafx.geometry.Pos.CENTER);
 
-        // Left panel - Controls and logs
+        // Left panel - Controls and logs (now styled as panel)
         VBox leftPanel = createLeftPanel(primaryStage);
         leftPanel.setPrefWidth(500);
+        leftPanel.getStyleClass().add("control-panel");
 
         // Right panel - Charts
         VBox rightPanel = createChartsPanel();
         rightPanel.setPrefWidth(650);
 
         mainLayout.getChildren().addAll(leftPanel, rightPanel);
+        
+        // Center the main layout in the root
+        StackPane.setAlignment(mainLayout, javafx.geometry.Pos.CENTER);
         root.getChildren().addAll(canvas, mainLayout);
 
         Scene scene = new Scene(root, 1200, 800);
@@ -92,46 +99,67 @@ public class DefenderGUI extends Application implements
     }
 
     private VBox createLeftPanel(Stage primaryStage) {
-        VBox leftPanel = new VBox(10);
+        VBox leftPanel = new VBox(15);
+        leftPanel.setPadding(new Insets(10));
 
         // Top controls
         HBox topControls = new HBox(10);
         pathField = new TextField();
         pathField.setPromptText("Folder to monitor...");
-        Button browseBtn = new Button("Browse");
-        Button startBtn = new Button("Start");
-        Button stopBtn = new Button("Stop");
-        Button testBtn = new Button("Test Emergency");
-
+        Button browseBtn = new Button("📁 Browse");
+        browseBtn.getStyleClass().add("control-button");
+        
         browseBtn.setOnAction(e -> selectFolder(primaryStage));
+        topControls.getChildren().addAll(pathField, browseBtn);
+
+        // Button controls with enhanced styling
+        HBox buttonControls = new HBox(10);
+        Button startBtn = new Button("▶️ Start");
+        Button stopBtn = new Button("⏹️ Stop");
+        Button testBtn = new Button("🚨 Test Emergency");
+        
+        // Apply custom styling to buttons
+        startBtn.getStyleClass().add("control-button");
+        stopBtn.getStyleClass().add("control-button");
+        testBtn.getStyleClass().add("control-button");
+        
         startBtn.setOnAction(e -> startMonitoring());
         stopBtn.setOnAction(e -> stopMonitoring());
         testBtn.setOnAction(e -> testEmergency());
-
-        topControls.getChildren().addAll(pathField, browseBtn);
         
-        HBox buttonControls = new HBox(10);
         buttonControls.getChildren().addAll(startBtn, stopBtn, testBtn);
 
-        // Status labels
+        // Status labels with title
+        Label statusTitle = new Label("📊 System Status");
+        statusTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        
         statusLabel = new Label("Ready");
         pathLabel = new Label("No folder selected");
         statsLabel = new Label("Files: 0 | Deletes: 0 | Alerts: 0 | Current: 0/10");
-
-        VBox statusBox = new VBox(5, statusLabel, pathLabel, statsLabel);
+        
+        VBox statusBox = new VBox(8, statusTitle, statusLabel, pathLabel, statsLabel);
 
         // Progress bar
         detectionProgress = new ProgressBar(0);
         detectionProgress.setPrefWidth(450);
 
-        // Log area
+        // Log area with title
+        Label logTitle = new Label("📝 Activity Log");
+        logTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        
         logArea = new TextArea();
         logArea.setEditable(false);
-        logArea.setPrefHeight(400);
+        logArea.setPrefHeight(350);
 
-        leftPanel.getChildren().addAll(topControls, buttonControls, statusBox, detectionProgress, 
-                                     new Label("Activity Log:"), logArea);
-        
+        leftPanel.getChildren().addAll(
+            topControls, 
+            buttonControls, 
+            statusBox, 
+            detectionProgress,
+            logTitle, 
+            logArea
+        );
+
         return leftPanel;
     }
 
@@ -148,7 +176,7 @@ public class DefenderGUI extends Application implements
 
         activityChart = new LineChart<>(xAxis, yAxis);
         activityChart.setTitle("📊 Real-Time File Activity");
-        activityChart.setPrefHeight(300);
+        activityChart.setPrefHeight(250);
         activityChart.setAnimated(true);
         activityChart.setCreateSymbols(false);
 
@@ -163,18 +191,36 @@ public class DefenderGUI extends Application implements
         // Statistics Pie Chart
         statisticsChart = new PieChart();
         statisticsChart.setTitle("📈 Detection Statistics");
-        statisticsChart.setPrefHeight(300);
+        statisticsChart.setPrefHeight(250);
         updateStatisticsPieChart(0, 0, 0);
 
-        // Threat Level Gauge (using ProgressIndicator as gauge)
-        VBox gaugeBox = new VBox(5);
-        Label gaugeLabel = new Label("🚨 Threat Level");
-        ProgressIndicator threatGauge = new ProgressIndicator(0);
-        threatGauge.setPrefSize(100, 100);
-        gaugeBox.getChildren().addAll(gaugeLabel, threatGauge);
-
-        chartsPanel.getChildren().addAll(activityChart, statisticsChart, gaugeBox);
+        // Threat Level Panel (styled as a prominent panel)
+        VBox threatPanel = new VBox(10);
+        threatPanel.getStyleClass().add("threat-panel");
+        threatPanel.setAlignment(javafx.geometry.Pos.CENTER);
+        threatPanel.setPadding(new Insets(15));
         
+        Label threatTitle = new Label("🚨 THREAT LEVEL MONITOR");
+        threatTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #ff0000;");
+        
+        // Threat gauge with larger size
+        threatGauge = new ProgressIndicator(0);
+        threatGauge.setPrefSize(120, 120);
+        threatGauge.getStyleClass().add("threat-gauge");
+        
+        // Threat level text with larger font
+        Label threatLevelText = new Label("LOW");
+        threatLevelText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #00ff41;");
+        threatLevelText.setId("threat-level-text");
+        
+        // Additional threat info
+        Label threatInfo = new Label("System Status: SECURE");
+        threatInfo.setStyle("-fx-font-size: 12px; -fx-text-fill: #00ff41;");
+        threatInfo.setId("threat-info-text");
+        
+        threatPanel.getChildren().addAll(threatTitle, threatGauge, threatLevelText, threatInfo);
+
+        chartsPanel.getChildren().addAll(activityChart, statisticsChart, threatPanel);
         return chartsPanel;
     }
 
@@ -192,11 +238,10 @@ public class DefenderGUI extends Application implements
     private void updateActivityChart() {
         Platform.runLater(() -> {
             timeCounter++;
-            
             // Add new data points
-            modificationSeries.getData().add(new XYChart.Data<>(timeCounter, 
+            modificationSeries.getData().add(new XYChart.Data<>(timeCounter,
                 detectionEngine.getCurrentModificationCount()));
-            deletionSeries.getData().add(new XYChart.Data<>(timeCounter, 
+            deletionSeries.getData().add(new XYChart.Data<>(timeCounter,
                 detectionEngine.getCurrentDeletionCount()));
 
             // Keep only last 20 points for performance
@@ -209,7 +254,56 @@ public class DefenderGUI extends Application implements
         });
     }
 
-    // Rest of your existing methods remain the same...
+    private void updateThreatLevel(long totalMods, long totalDeletes, long alerts) {
+        Platform.runLater(() -> {
+            // Calculate threat level based on activity
+            double threatLevel = 0.0;
+            String threatText = "LOW";
+            String threatColor = "#00ff41"; // Green
+            String threatInfo = "System Status: SECURE";
+            
+            int currentMods = detectionEngine.getCurrentModificationCount();
+            
+            if (alerts > 0) {
+                threatLevel = 1.0;
+                threatText = "CRITICAL";
+                threatColor = "#ff0000"; // Red
+                threatInfo = "⚠️ RANSOMWARE DETECTED!";
+            } else if (currentMods >= 8) {
+                threatLevel = 0.8;
+                threatText = "HIGH";
+                threatColor = "#ff6600"; // Orange
+                threatInfo = "⚠️ High Activity Detected";
+            } else if (currentMods >= 5 || totalDeletes > 10) {
+                threatLevel = 0.5;
+                threatText = "MEDIUM";
+                threatColor = "#ffff00"; // Yellow
+                threatInfo = "⚠️ Moderate Activity";
+            } else if (currentMods >= 3 || totalMods > 20) {
+                threatLevel = 0.3;
+                threatText = "LOW-MED";
+                threatColor = "#ccff00"; // Yellow-green
+                threatInfo = "📊 Normal Activity";
+            }
+            
+            threatGauge.setProgress(threatLevel);
+            
+            // Update threat level text
+            Label threatLevelText = (Label) threatGauge.getParent().lookup("#threat-level-text");
+            Label threatInfoText = (Label) threatGauge.getParent().lookup("#threat-info-text");
+            
+            if (threatLevelText != null) {
+                threatLevelText.setText(threatText);
+                threatLevelText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + threatColor + ";");
+            }
+            
+            if (threatInfoText != null) {
+                threatInfoText.setText(threatInfo);
+                threatInfoText.setStyle("-fx-font-size: 12px; -fx-text-fill: " + threatColor + ";");
+            }
+        });
+    }
+
     private void selectFolder(Stage stage) {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Select Folder to Monitor");
@@ -258,7 +352,6 @@ public class DefenderGUI extends Application implements
     }
 
     // ====== CALLBACKS ======
-
     @Override
     public void onMonitoringStarted(Path path) {
         Platform.runLater(() -> {
@@ -309,6 +402,9 @@ public class DefenderGUI extends Application implements
             // Update charts
             updateStatisticsPieChart(totalMods, totalDeletes, alerts);
             updateActivityChart();
+            
+            // Update threat level gauge
+            updateThreatLevel(totalMods, totalDeletes, alerts);
         });
     }
 
@@ -338,7 +434,7 @@ public class DefenderGUI extends Application implements
         logMessage("⚠️ Emergency response error: " + e.getMessage());
     }
 
-    // Matrix Rain Effect (same as before)
+    // Matrix Rain Effect
     private void startMatrixRain(GraphicsContext gc, int width, int height) {
         final String chars = "01ZX$#@%&🔒🛡️⚡";
         final int fontSize = 16;
@@ -351,7 +447,6 @@ public class DefenderGUI extends Application implements
             public void handle(long now) {
                 gc.setFill(Color.rgb(0, 0, 0, 0.03));
                 gc.fillRect(0, 0, width, height);
-
                 gc.setFill(Color.LIME);
                 gc.setFont(javafx.scene.text.Font.font("Consolas", fontSize));
 
@@ -366,5 +461,9 @@ public class DefenderGUI extends Application implements
                 }
             }
         }.start();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

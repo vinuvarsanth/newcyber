@@ -1,5 +1,5 @@
-C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\RansomwareDefender\src\com\defender\DetectionEngine.java
-C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\RansomwareDefender\src\com\defender\EmergencyResponse.java
-C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\RansomwareDefender\src\com\defender\FileMonitor.java
-C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\RansomwareDefender\src\com\defender\RansomwareDefender.java
-C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\RansomwareDefender\src\com\defender\gui\DefenderGUI.java
+C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\newcyber\src\com\defender\DetectionEngine.java
+C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\newcyber\src\com\defender\EmergencyResponse.java
+C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\newcyber\src\com\defender\FileMonitor.java
+C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\newcyber\src\com\defender\RansomwareDefender.java
+C:\Users\vinuv\Desktop\CareerTIQ\Newfolder\newcyber\src\com\defender\gui\DefenderGUI.java

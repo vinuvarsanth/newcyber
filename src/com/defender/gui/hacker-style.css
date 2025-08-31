@@ -74,3 +74,69 @@
 .progress-indicator {
     -fx-accent: #00ff41;
 }
+
+/* Control Panel Styling */
+.control-panel {
+    -fx-background-color: rgba(0, 0, 0, 0.85);
+    -fx-border-color: #00ff41;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, #00ff41, 8, 0.3, 0, 0);
+}
+
+/* Center alignment for main container */
+.main-container {
+    -fx-alignment: center;
+}
+
+/* Enhanced button styling for better visibility */
+.control-button {
+    -fx-background-color: rgba(0, 255, 65, 0.1);
+    -fx-text-fill: #00ff41;
+    -fx-border-color: #00ff41;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-border-width: 1.5px;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.control-button:hover {
+    -fx-background-color: rgba(0, 255, 65, 0.2);
+    -fx-text-fill: #00ff41;
+    -fx-effect: dropshadow(gaussian, #00ff41, 5, 0.4, 0, 0);
+}
+
+/* Threat Panel Styling - Prominent and Eye-catching */
+.threat-panel {
+    -fx-background-color: rgba(25, 25, 25, 0.9);
+    -fx-border-color: #ff0000;
+    -fx-border-width: 3px;
+    -fx-border-radius: 15;
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, #ff0000, 12, 0.5, 0, 0);
+    -fx-min-height: 200px;
+}
+
+/* Enhanced Threat Gauge Styling */
+.threat-gauge {
+    -fx-accent: #00ff41;
+    -fx-progress-color: #00ff41;
+}
+
+.threat-gauge .percentage {
+    -fx-fill: #00ff41;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.threat-gauge .track {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-insets: 0;
+}
