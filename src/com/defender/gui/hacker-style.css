@@ -38,3 +38,39 @@
 .progress-bar {
     -fx-accent: #00ff41;
 }
+
+/* Chart Styling */
+.chart {
+    -fx-background-color: rgba(0, 0, 0, 0.8);
+    -fx-border-color: #00ff41;
+    -fx-border-width: 1px;
+}
+
+.chart-title {
+    -fx-text-fill: #00ff41;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 14px;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-text-fill: #00ff41;
+}
+
+.axis {
+    -fx-tick-label-fill: #00ff41;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.axis-label {
+    -fx-text-fill: #00ff41;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.chart-series-line {
+    -fx-stroke-width: 2px;
+}
+
+.progress-indicator {
+    -fx-accent: #00ff41;
+}
