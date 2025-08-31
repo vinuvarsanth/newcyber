@@ -1,18 +1,23 @@
 package com.defender.gui;
 
 import com.defender.*;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.*;
 import java.nio.file.WatchEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 
 public class DefenderGUI extends Application implements
         FileMonitor.FileMonitorCallback,
@@ -38,8 +43,16 @@ public class DefenderGUI extends Application implements
         fileMonitor = new FileMonitor(detectionEngine, this);
         emergencyResponse = new EmergencyResponse(this);
 
-        VBox root = new VBox(10);
-        root.setPadding(new Insets(10));
+        // Root layout with background canvas
+        StackPane root = new StackPane();
+
+        // Matrix rain canvas
+        Canvas canvas = new Canvas(800, 600);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        startMatrixRain(gc, 800, 600);
+
+        VBox mainUI = new VBox(10);
+        mainUI.setPadding(new Insets(10));
 
         // Top controls
         HBox topControls = new HBox(10);
@@ -70,15 +83,21 @@ public class DefenderGUI extends Application implements
         // Log area
         logArea = new TextArea();
         logArea.setEditable(false);
+        logArea.setPrefHeight(400);
 
-        root.getChildren().addAll(topControls, statusBox, detectionProgress, logArea);
+        mainUI.getChildren().addAll(topControls, statusBox, detectionProgress, logArea);
+
+        root.getChildren().addAll(canvas, mainUI);
 
         Scene scene = new Scene(root, 800, 600);
+        scene.getStylesheets().add(getClass().getResource("hacker-style.css").toExternalForm());
+
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Ransomware Defender v1.0 (JavaFX)");
+        primaryStage.setTitle("💻 Ransomware Defender v1.0 [Hacker Mode]");
+        primaryStage.initStyle(StageStyle.DECORATED);
         primaryStage.show();
 
-        logMessage("JavaFX UI initialized");
+        logMessage("JavaFX Hacker UI initialized");
     }
 
     private void selectFolder(Stage stage) {
@@ -199,5 +218,35 @@ public class DefenderGUI extends Application implements
     @Override
     public void onEmergencyError(Exception e) {
         logMessage("Emergency error: " + e.getMessage());
+    }
+
+    // ===== MATRIX RAIN EFFECT =====
+    private void startMatrixRain(GraphicsContext gc, int width, int height) {
+        final String chars = "01ZX$#@%&";
+        final int fontSize = 18;
+        final int columns = width / fontSize;
+        int[] drops = new int[columns];
+        Random random = new Random();
+
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                gc.setFill(Color.rgb(0, 0, 0, 0.05));
+                gc.fillRect(0, 0, width, height);
+
+                gc.setFill(Color.LIME);
+                gc.setFont(javafx.scene.text.Font.font("Consolas", fontSize));
+
+                for (int i = 0; i < columns; i++) {
+                    String text = String.valueOf(chars.charAt(random.nextInt(chars.length())));
+                    gc.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+        }.start();
     }
 }

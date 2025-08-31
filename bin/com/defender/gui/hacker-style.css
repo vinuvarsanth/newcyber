@@ -1,0 +1,40 @@
+.root {
+    -fx-background-color: #000000;
+}
+
+.label {
+    -fx-text-fill: #00ff41;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.text-field {
+    -fx-background-color: #111111;
+    -fx-text-fill: #00ff41;
+    -fx-border-color: #00ff41;
+    -fx-border-radius: 5;
+}
+
+.button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #00ff41;
+    -fx-border-color: #00ff41;
+    -fx-border-radius: 5;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #00ff41;
+    -fx-text-fill: black;
+    -fx-effect: dropshadow(gaussian, #00ff41, 10, 0.5, 0, 0);
+}
+
+.text-area {
+    -fx-control-inner-background: black;
+    -fx-text-fill: #00ff41;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.progress-bar {
+    -fx-accent: #00ff41;
+}
